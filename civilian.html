@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>明代建筑 - 民居等级</title>
+    <script
+      type="module"
+      src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"
+    ></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .royal-container {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: top left;
+        transform: scale(var(--scale, 1)) translate(-50%, -50%);
+        background: #f5f5f5;
+        overflow: hidden;
+      }
+      .royal-img {
+        position: absolute;
+        object-fit: contain;
+        transition: all 0.2s ease-in-out;
+        z-index: 20;
+      }
+      .decor-line {
+        position: absolute;
+        height: 0;
+        outline: 1px solid #333;
+        outline-offset: -0.5px;
+        z-index: 20;
+      }
+      .back-btn-wrapper {
+        position: absolute;
+        left: 1645px;
+        top: 885px;
+        width: 209px;
+        height: 130px;
+        z-index: 30;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+      }
+      .back-btn-wrapper:hover .royal-img {
+        transform: scale(1.03);
+        opacity: 0.95;
+      }
+      .model-img-placeholder {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 710px;
+        height: 550px;
+        z-index: 10;
+        background: transparent;
+        cursor: pointer;
+        overflow: hidden;
+        border-radius: 8px;
+      }
+      .main-display-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: opacity 0.3s ease;
+      }
+      .mouse-tooltip {
+        position: fixed;
+        background: rgba(51, 51, 51, 0.9);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.1s ease;
+        z-index: 9999;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      .model-switch-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        z-index: 30;
+        transition: all 0.2s ease;
+        width: 360px;
+        height: 260px;
+      }
+      .model-switch-btn:hover {
+        transform: translateY(-50%) scale(1.1);
+        opacity: 0.8;
+      }
+      .left-btn {
+        left: 50px;
+      }
+      .right-btn {
+        right: 50px;
+      }
+
+      .img-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+        transform: scale(1.3);
+        transform-origin: center center;
+      }
+      .img-box {
+        position: relative;
+        width: 1536px;
+        height: 1024px;
+      }
+      .img-modal img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: left top;
+      }
+      .img-close-btn {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: #fff;
+        font-size: 40px;
+        cursor: pointer;
+        z-index: 1000;
+      }
+
+      .model-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: url("images/图卷 1.png") center center / cover no-repeat;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        padding: 20px;
+      }
+      .model-modal-content {
+        width: 90%;
+        max-width: 1200px;
+        height: 80vh;
+        background: transparent;
+        border-radius: 10px;
+        position: relative;
+        border: none;
+        backdrop-filter: none;
+      }
+      #modalModelViewer {
+        width: 100%;
+        height: 100%;
+      }
+      .model-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 1001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .model-close-btn:hover {
+        background: #555;
+      }
+      .to-end-btn {
+        position: absolute;
+        left: 50%;
+        bottom: 60px;
+        transform: translateX(-50%);
+        padding: 1rem 2.5rem;
+        background: #333;
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 40;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      .to-end-btn:hover {
+        background: #555;
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+      }
+      .custom-tag-btn {
+        position: absolute;
+        z-index: 21;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .custom-tag-btn:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
+      .tag-text {
+        position: absolute;
+        left: 30.41px;
+        top: 24.78px;
+        width: 40px;
+        height: 112px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        color: #333;
+        font-size: 2.25rem;
+        font-family: "STFangsong", serif;
+        line-height: 1.2;
+      }
+
+      .light-square {
+        position: absolute;
+        left: var(--left);
+        top: var(--top);
+        width: var(--w);
+        height: var(--h);
+        border: 2px solid #333;
+        box-shadow:
+          0 0 0 2px rgba(255, 255, 255, 0.9),
+          0 0 10px 2px #ffffff,
+          0 0 20px 4px #ffffff;
+        opacity: 0;
+        pointer-events: none;
+        animation: squareAnim var(--duration, 3s) ease forwards;
+      }
+      @keyframes squareAnim {
+        0% {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        10% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        90% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="royal-container">
+      <img
+        id="bgImage"
+        class="royal-img"
+        src="images/civilian/overview-common.png"
+        style="left: 0; top: 0; width: 100%; height: 100%; z-index: 10"
+        alt="明代民居建筑背景"
+      />
+
+      <div
+        class="model-img-placeholder"
+        onmouseenter="showTooltip()"
+        onmouseleave="hideTooltip()"
+        onmousemove="moveTooltip(event)"
+        onclick="openModelModal()"
+      >
+        <img
+          id="mainDisplayImg"
+          class="main-display-img"
+          src=""
+          alt="明代民居建筑图片"
+        />
+      </div>
+      <div class="mouse-tooltip" id="mouseTooltip">点击可查看3D模型</div>
+
+      <img
+        class="model-switch-btn left-btn"
+        src="images/箭头 2.png"
+        onclick="switchBuilding('prev')"
+        alt="上一个模型"
+      />
+      <img
+        class="model-switch-btn right-btn"
+        src="images/箭头 1.png"
+        onclick="switchBuilding('next')"
+        alt="下一个模型"
+      />
+
+      <a href="identity.html" class="back-btn-wrapper">
+        <img
+          class="royal-img"
+          src="images/image 27.png"
+          style="left: 105px; top: 0; width: 166px; height: 166px"
+          alt="装饰"
+        />
+        <img
+          class="royal-img"
+          src="images/返回 1.png"
+          style="left: 0; top: 19px; width: 209px; height: 111px"
+          alt="返回"
+        />
+      </a>
+      <a href="end.html" class="to-end-btn">完成浏览 → 前往总结页</a>
+
+      <!-- 屋顶标签 + 线条 -->
+      <div
+        class="custom-tag-btn"
+        style="left: 1100px; top: 280px"
+        onclick="
+          playTagSound();
+          openImgModal('roof');
+        "
+      >
+        <img src="images/屋顶 1.png" style="width: 96px; height: 192px" />
+      </div>
+      <div
+        style="
+          position: absolute;
+          left: 1070px;
+          top: 340px;
+          width: 48px;
+          border-top: 2px solid #333;
+          z-index: 999;
+        "
+      ></div>
+      <div
+        style="
+          position: absolute;
+          left: 1070px;
+          top: 340px;
+          height: 90px;
+          border-left: 2px solid #333;
+          z-index: 999;
+        "
+      ></div>
+
+      <!-- 台基标签 + 线条 -->
+      <div
+        class="custom-tag-btn"
+        style="left: 950px; top: 750px"
+        onclick="
+          playTagSound();
+          openImgModal('taiji');
+        "
+      >
+        <img src="images/台基 1.png" style="width: 96px; height: 192px" />
+      </div>
+      <div
+        style="
+          position: absolute;
+          left: 1030px;
+          top: 780px;
+          width: 63px;
+          border-top: 2px solid #333;
+          z-index: 999;
+        "
+      ></div>
+      <div
+        style="
+          position: absolute;
+          left: 1090px;
+          top: 700px;
+          height: 80px;
+          border-left: 2px solid #333;
+          z-index: 999;
+        "
+      ></div>
+
+      <!-- 开间标签 + 线条 -->
+      <div
+        class="custom-tag-btn"
+        style="left: 450px; top: 560px"
+        onclick="
+          playTagSound();
+          openImgModal('jianzhu');
+        "
+      >
+        <img src="images/开间 1.png" style="width: 96px; height: 192px" />
+      </div>
+      <div
+        style="
+          position: absolute;
+          left: 540px;
+          top: 630px;
+          width: 150px;
+          border-top: 2px solid #333;
+          z-index: 999;
+        "
+      ></div>
+
+      <!-- 装饰标签 + 线条 -->
+      <div
+        class="custom-tag-btn"
+        style="left: 1350px; top: 420px"
+        onclick="
+          playTagSound();
+          openImgModal('zhuangshi');
+        "
+      >
+        <img src="images/装饰 1.png" style="width: 96px; height: 192px" />
+      </div>
+      <div
+        style="
+          position: absolute;
+          left: 1230px;
+          top: 530px;
+          width: 153px;
+          border-top: 2px solid #333;
+          z-index: 999;
+        "
+      ></div>
+    </div>
+
+    <div class="img-modal" id="imgModal">
+      <span class="img-close-btn" onclick="closeImgModal()">×</span>
+      <div class="img-box" id="imgBox">
+        <img id="modalImg" alt="详情图片" />
+      </div>
+    </div>
+
+    <div class="model-modal" id="modelModal">
+      <div class="model-modal-content">
+        <button class="model-close-btn" onclick="closeModelModal()">×</button>
+        <model-viewer
+          id="modalModelViewer"
+          camera-controls
+          auto-rotate
+          ar="false"
+          crossorigin="anonymous"
+        >
+          <div slot="error">模型加载失败，请检查格式或路径！</div>
+        </model-viewer>
+      </div>
+    </div>
+
+    <script>
+      // 点击标签音效
+      function playTagSound() {
+        const snd = new Audio("audio/click.mp3");
+        snd.volume = 0.5;
+        snd.currentTime = 0;
+        snd.play().catch(() => {});
+      }
+
+      const buildingList = [
+        {
+          type: "yingshan-minju",
+          name: "民居硬山顶",
+          modelUrl: "images/civilian/硬山顶.glb",
+          mainImg: "images/civilian/民居硬山顶主图.png",
+          bgImg: "images/civilian/背景1.png",
+          enterVoice: "audio/civilian/硬山顶_进入介绍.wav",
+          modelVoice: "audio/鼠标拖动查看.wav",
+          roofImg: "images/civilian/民居硬山顶_屋顶.png",
+          taijiImg: "images/civilian/民居硬山顶_地基.png",
+          zhuangshiImg: "images/civilian/民居硬山顶_装饰.png",
+          jianzhuImg: "images/civilian/民居硬山顶_开间.png",
+          lights: {
+            roof: [
+              { duration: 6, voice: "audio/civilian/庶民屋顶/0.wav" },
+              {
+                left: 228,
+                top: 279,
+                w: 1055,
+                h: 346,
+                duration: 8.5,
+                voice: "audio/civilian/庶民屋顶/1.wav",
+              },
+              {
+                left: 219,
+                top: 641,
+                w: 288,
+                h: 238,
+                duration: 6,
+                voice: "audio/civilian/庶民屋顶/2.wav",
+              },
+              {
+                left: 523,
+                top: 641,
+                w: 245,
+                h: 238,
+                duration: 10,
+                voice: "audio/civilian/庶民屋顶/3.wav",
+              },
+              {
+                left: 781,
+                top: 636,
+                w: 331,
+                h: 243,
+                duration: 9,
+                voice: "audio/civilian/庶民屋顶/4.wav",
+              },
+              {
+                left: 1123,
+                top: 636,
+                w: 198,
+                h: 243,
+                duration: 13,
+                voice: "audio/civilian/庶民屋顶/5.wav",
+              },
+            ],
+            taiji: [
+              { duration: 8, voice: "audio/civilian/庶民台基/0.wav" },
+              {
+                left: 220,
+                top: 293,
+                w: 586,
+                h: 572,
+                duration: 9,
+                voice: "audio/civilian/庶民台基/1.wav",
+              },
+              {
+                left: 823,
+                top: 281,
+                w: 492,
+                h: 311,
+                duration: 8,
+                voice: "audio/civilian/庶民台基/2.wav",
+              },
+              {
+                left: 823,
+                top: 606,
+                w: 500,
+                h: 259,
+                duration: 10,
+                voice: "audio/civilian/庶民台基/3.wav",
+              },
+            ],
+            jianzhu: [
+              { duration: 7, voice: "audio/civilian/庶民开间/0.wav" },
+              {
+                left: 207,
+                top: 284,
+                w: 728,
+                h: 333,
+                duration: 10,
+                voice: "audio/civilian/庶民开间/1.wav",
+              },
+              {
+                left: 970,
+                top: 276,
+                w: 344,
+                h: 341,
+                duration: 10,
+                voice: "audio/civilian/庶民开间/2.wav",
+              },
+              {
+                left: 221,
+                top: 628,
+                w: 505,
+                h: 210,
+                duration: 9,
+                voice: "audio/civilian/庶民开间/3.wav",
+              },
+              {
+                left: 751,
+                top: 633,
+                w: 563,
+                h: 205,
+                duration: 10,
+                voice: "audio/civilian/庶民开间/4.wav",
+              },
+            ],
+            zhuangshi: [
+              { duration: 5, voice: "audio/civilian/庶民装饰/0.wav" },
+              {
+                left: 218,
+                top: 286,
+                w: 736,
+                h: 377,
+                duration: 10,
+                voice: "audio/civilian/庶民装饰/1.wav",
+              },
+              {
+                left: 967,
+                top: 279,
+                w: 354,
+                h: 391,
+                duration: 8,
+                voice: "audio/civilian/庶民装饰/2.wav",
+              },
+              {
+                left: 217,
+                top: 679,
+                w: 474,
+                h: 218,
+                duration: 9,
+                voice: "audio/civilian/庶民装饰/3.wav",
+              },
+              {
+                left: 717,
+                top: 684,
+                w: 604,
+                h: 213,
+                duration: 12,
+                voice: "audio/civilian/庶民装饰/4.wav",
+              },
+            ],
+          },
+        },
+        {
+          type: "xuanshan-minju",
+          name: "富商悬山顶",
+          modelUrl: "images/civilian/富商.glb",
+          mainImg: "images/civilian/民居悬山顶主图.png",
+          bgImg: "images/civilian/背景2.png",
+          enterVoice: "audio/civilian/富商悬山顶_进入介绍.wav",
+          modelVoice: "audio/鼠标拖动查看.wav",
+          roofImg: "images/civilian/民居悬山顶_屋顶.png",
+          taijiImg: "images/civilian/民居悬山顶_地基.png",
+          zhuangshiImg: "images/civilian/民居悬山顶_装饰.png",
+          jianzhuImg: "images/civilian/民居悬山顶_开间.png",
+          lights: {
+            roof: [
+              { duration: 6, voice: "audio/civilian/富商屋顶/0.wav" },
+              {
+                left: 222,
+                top: 272,
+                w: 761,
+                h: 301,
+                duration: 8,
+                voice: "audio/civilian/富商屋顶/1.wav",
+              },
+              {
+                left: 1009,
+                top: 272,
+                w: 314,
+                h: 296,
+                duration: 10.5,
+                voice: "audio/civilian/富商屋顶/2.wav",
+              },
+              {
+                left: 222,
+                top: 663,
+                w: 617,
+                h: 193,
+                duration: 9.5,
+                voice: "audio/civilian/富商屋顶/3.wav",
+              },
+              {
+                left: 859,
+                top: 591,
+                w: 464,
+                h: 265,
+                duration: 10,
+                voice: "audio/civilian/富商屋顶/4.wav",
+              },
+            ],
+            taiji: [
+              { duration: 4.5, voice: "audio/civilian/富商台基/0.wav" },
+              {
+                left: 188,
+                top: 229,
+                w: 1166,
+                h: 277,
+                duration: 9,
+                voice: "audio/civilian/富商台基/1.wav",
+              },
+              {
+                left: 168,
+                top: 525,
+                w: 371,
+                h: 335,
+                duration: 6,
+                voice: "audio/civilian/富商台基/2.wav",
+              },
+              {
+                left: 547,
+                top: 525,
+                w: 422,
+                h: 335,
+                duration: 6,
+                voice: "audio/civilian/富商台基/3.wav",
+              },
+              {
+                left: 979,
+                top: 525,
+                w: 389,
+                h: 335,
+                duration: 11,
+                voice: "audio/civilian/富商台基/4.wav",
+              },
+            ],
+            jianzhu: [
+              { duration: 5, voice: "audio/civilian/富商开间/0.wav" },
+              {
+                left: 196,
+                top: 218,
+                w: 837,
+                h: 327,
+                duration: 9,
+                voice: "audio/civilian/富商开间/1.wav",
+              },
+              {
+                left: 1044,
+                top: 333,
+                w: 318,
+                h: 217,
+                duration: 7,
+                voice: "audio/civilian/富商开间/2.wav",
+              },
+              {
+                left: 177,
+                top: 570,
+                w: 346,
+                h: 283,
+                duration: 9,
+                voice: "audio/civilian/富商开间/3.wav",
+              },
+              {
+                left: 540,
+                top: 570,
+                w: 406,
+                h: 283,
+                duration: 10,
+                voice: "audio/civilian/富商开间/4.wav",
+              },
+              {
+                left: 959,
+                top: 570,
+                w: 410,
+                h: 288,
+                duration: 10,
+                voice: "audio/civilian/富商开间/5.wav",
+              },
+            ],
+            zhuangshi: [
+              { duration: 6, voice: "audio/civilian/富商装饰/0.wav" },
+              {
+                left: 209,
+                top: 208,
+                w: 1163,
+                h: 439,
+                duration: 11,
+                voice: "audio/civilian/富商装饰/1.wav",
+              },
+              {
+                left: 175,
+                top: 656,
+                w: 356,
+                h: 200,
+                duration: 9,
+                voice: "audio/civilian/富商装饰/2.wav",
+              },
+              {
+                left: 544,
+                top: 656,
+                w: 362,
+                h: 213,
+                duration: 7,
+                voice: "audio/civilian/富商装饰/3.wav",
+              },
+              {
+                left: 918,
+                top: 656,
+                w: 443,
+                h: 213,
+                duration: 13,
+                voice: "audio/civilian/富商装饰/4.wav",
+              },
+            ],
+          },
+        },
+      ];
+
+      let currentIndex = 0;
+      let currentBuildingData = buildingList[0];
+      const tooltip = document.getElementById("mouseTooltip");
+      let currentAudio = null;
+      let timerList = [];
+
+      window.onload = function () {
+        updateBuildingContent();
+        updateScale();
+        playBuildingEnterVoice();
+      };
+
+      function playBuildingEnterVoice() {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        timerList.forEach((t) => clearTimeout(t));
+        timerList = [];
+
+        const voiceUrl = currentBuildingData.enterVoice;
+        if (!voiceUrl) return;
+
+        if (window.bgMusic) window.bgMusic.volume = 0.2;
+
+        currentAudio = new Audio(voiceUrl);
+        currentAudio.volume = 1.0;
+        currentAudio.play().catch(() => {
+          document.addEventListener('click', () => currentAudio.play(), { once: true });
+        });
+
+        currentAudio.onended = function() {
+          if (window.bgMusic) window.bgMusic.volume = 1.0;
+        };
+      }
+
+      function updateBuildingContent() {
+        document.getElementById("mainDisplayImg").src = currentBuildingData.mainImg;
+        document.getElementById("bgImage").src = currentBuildingData.bgImg;
+      }
+
+      function switchBuilding(direction) {
+        currentIndex = direction === "next"
+          ? (currentIndex + 1) % buildingList.length
+          : (currentIndex - 1 + buildingList.length) % buildingList.length;
+        currentBuildingData = buildingList[currentIndex];
+        updateBuildingContent();
+        playBuildingEnterVoice();
+      }
+
+      function showTooltip() { tooltip.style.opacity = 1; }
+      function hideTooltip() { tooltip.style.opacity = 0; }
+      function moveTooltip(e) {
+        tooltip.style.left = e.clientX + 15 + "px";
+        tooltip.style.top = e.clientY + 10 + "px";
+      }
+
+      function openModelModal() {
+        playTagSound();
+        document.getElementById("modalModelViewer").src = currentBuildingData.modelUrl;
+        document.getElementById("modelModal").style.display = "flex";
+
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+
+        const modelVoiceUrl = currentBuildingData.modelVoice;
+        if (!modelVoiceUrl) return;
+
+        if (window.bgMusic) window.bgMusic.volume = 0.2;
+
+        currentAudio = new Audio(modelVoiceUrl);
+        currentAudio.volume = 1.0;
+        currentAudio.play().catch(() => {});
+
+        currentAudio.onended = function() {
+          if (window.bgMusic) window.bgMusic.volume = 1.0;
+        };
+      }
+
+      function closeModelModal() {
+        document.getElementById("modelModal").style.display = "none";
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        setTimeout(restoreBGMVolume, 300);
+      }
+
+      function openImgModal(type) {
+        const url = currentBuildingData[type + "Img"];
+        if (!url) {
+          alert("暂无图片");
+          return;
+        }
+
+        const modalImg = document.getElementById("modalImg");
+        const imgBox = document.getElementById("imgBox");
+        modalImg.src = url;
+
+        imgBox.querySelectorAll(".light-square").forEach((el) => el.remove());
+        if (currentAudio) currentAudio.pause();
+        timerList.forEach((t) => clearTimeout(t));
+        timerList = [];
+
+        const list = currentBuildingData.lights[type];
+        let time = 0;
+
+        list.forEach((item, index) => {
+          const timer = setTimeout(() => {
+            if (index === 0) {
+              currentAudio = new Audio(item.voice);
+              currentAudio.volume = 1.0;
+              currentAudio.play().catch(() => {});
+              return;
+            }
+            const div = document.createElement("div");
+            div.className = "light-square";
+            div.style.cssText = `
+              --left: ${item.left}px;
+              --top: ${item.top}px;
+              --w: ${item.w}px;
+              --h: ${item.h}px;
+              --duration: ${item.duration}s;
+            `;
+            imgBox.appendChild(div);
+
+            if (item.voice) {
+              if (currentAudio) currentAudio.pause();
+              currentAudio = new Audio(item.voice);
+              currentAudio.volume = 1.0;
+              currentAudio.play().catch(() => {});
+            }
+            setTimeout(() => div.remove(), item.duration * 1000);
+          }, time);
+          timerList.push(timer);
+          time += item.duration * 1000;
+        });
+
+        document.getElementById("imgModal").style.display = "flex";
+      }
+
+      function closeImgModal() {
+        document.getElementById("imgModal").style.display = "none";
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        timerList.forEach((t) => clearTimeout(t));
+        timerList = [];
+        setTimeout(restoreBGMVolume, 300);
+      }
+
+      window.addEventListener("click", (e) => {
+        if (e.target === document.getElementById("modelModal")) closeModelModal();
+        if (e.target === document.getElementById("imgModal")) closeImgModal();
+      });
+
+      function updateScale() {
+        const scaleX = window.innerWidth / 1920;
+        const scaleY = window.innerHeight / 1080;
+        const scale = Math.max(scaleX, scaleY);
+        document.documentElement.style.setProperty("--scale", scale);
+      }
+      window.addEventListener("resize", updateScale);
+
+      function lowerBGMVolume() {
+        if (window.bgMusic) window.bgMusic.volume = 0.2;
+      }
+      function restoreBGMVolume() {
+        if (window.bgMusic) window.bgMusic.volume = 1.0;
+      }
+
+      const _openImgModal = openImgModal;
+      openImgModal = function (type) {
+        lowerBGMVolume();
+        _openImgModal(type);
+      };
+
+      const _openModelModal = openModelModal;
+      openModelModal = function () {
+        lowerBGMVolume();
+        _openModelModal();
+      };
+
+      const _closeImgModal = closeImgModal;
+      closeImgModal = function () {
+        _closeImgModal();
+        setTimeout(restoreBGMVolume, 300);
+      };
+
+      const _closeModelModal = closeModelModal;
+      closeModelModal = function () {
+        _closeModelModal();
+        setTimeout(restoreBGMVolume, 300);
+      };
+    </script>
+
+    <iframe
+      id="musicFrame"
+      src="music.html"
+      style="display: none; width: 0; height: 0; border: 0"
+      allow="autoplay"
+    ></iframe>
+    <script>
+      let bgMusic;
+      const musicFrame = document.getElementById("musicFrame");
+
+      musicFrame.onload = function () {
+        bgMusic = window.top.bgMusic || musicFrame.contentWindow.bgMusic;
+        window.bgMusic = bgMusic;
+
+        if (bgMusic && bgMusic.paused) {
+          bgMusic.play().catch(() => {
+            document.addEventListener("click", () => bgMusic.play(), {
+              once: true,
+            });
+          });
+        }
+      };
+    </script>
+  </body>
+</html>

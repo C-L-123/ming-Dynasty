@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>身份选择</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --base-scale: 0.46875;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .container {
+            width: 4096px;
+            height: 2304px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform-origin: top left;
+            transform: scale(calc(var(--scale, 1) * var(--base-scale, 1))) translate(-50%, -50%);
+        }
+        .bg-img {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+        }
+        .item {
+            position: absolute;
+            object-fit: cover;
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+        .arrow {
+            position: absolute;
+            z-index: 999 !important;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .arrow:hover {
+            transform: scale(1.1);
+        }
+        .confirm {
+            position: absolute;
+            z-index: 888 !important;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img class="bg-img" src="images/Identity/身份.png" alt="背景">
+
+    <img id="p-role" class="item" src="images/Identity/平民.png" alt="">
+    <img id="p-text" class="item" src="images/Identity/平民字.png" alt="">
+    <img id="p-circle" class="item" src="images/Identity/圆.png" alt="">
+
+    <img id="h-role" class="item" src="images/Identity/皇室.png" alt="">
+    <img id="h-text" class="item" src="images/Identity/皇室字.png" alt="">
+    <img id="h-circle" class="item" src="images/Identity/圆.png" alt="">
+
+    <img id="g-role" class="item" src="images/Identity/官员.png" alt="">
+    <img id="g-text" class="item" src="images/Identity/官员字.png" alt="">
+    <img id="g-circle" class="item" src="images/Identity/圆.png" alt="">
+
+    <img id="leftArrow" class="arrow" 
+         style="width:231px; height:283px; left:1299px; top:925px;" 
+         src="images/Identity/左.png" alt="">
+    <img id="rightArrow" class="arrow" 
+         style="width:230px; height:283px; left:2543px; top:925px;" 
+         src="images/Identity/右.png" alt="">
+
+    <img class="confirm" 
+         style="width:731px; height:199px; left:1669px; top:1789px;" 
+         src="images/Identity/确认框.png" alt="">
+    <img id="confirmBtn" class="confirm" 
+         style="width:385px; height:132px; left:1842px; top:1823px;" 
+         src="images/Identity/确定.png" alt="">
+</div>
+
+<script>
+    const pos = {
+        left: {
+            role: "width:578px; height:569px; left:661px; top:781px; z-index:10",
+            text: "width:198px; height:98px; left:851px; top:1474px; z-index:10",
+            circle: "width:620px; height:620px; left:640px; top:755px; z-index:10"
+        },
+        mid: {
+            role: "width:849px; height:816px; left:1610px; top:658px; z-index:20",
+            text: "width:242px; height:126px; left:1913px; top:1575px; z-index:20",
+            circle: "width:936px; height:936px; left:1567px; top:598px; z-index:15"
+        },
+        right: {
+            role: "width:578px; height:568px; left:2834px; top:807px; z-index:10",
+            text: "width:198px; height:111px; left:3024px; top:1474px; z-index:10",
+            circle: "width:620px; height:620px; left:2813px; top:781px; z-index:10"
+        }
+    };
+
+    let order = [0, 1, 2];
+    const groups = [
+        { role: "p-role", text: "p-text", circle: "p-circle" },
+        { role: "h-role", text: "h-text", circle: "h-circle" },
+        { role: "g-role", text: "g-text", circle: "g-circle" }
+    ];
+
+    update();
+
+    rightArrow.addEventListener("click", () => {
+        order = [order[2], order[0], order[1]];
+        update();
+    });
+
+    leftArrow.addEventListener("click", () => {
+        order = [order[1], order[2], order[0]];
+        update();
+    });
+
+    confirmBtn.addEventListener("click", () => {
+        const current = order[1];
+        if (current === 1) window.location.href = "royal.html";
+        else if (current === 0) window.location.href = "civilian.html";
+        else if (current === 2) window.location.href = "official.html";
+    });
+
+    function update() {
+        set(groups[order[0]], pos.left);
+        set(groups[order[1]], pos.mid);
+        set(groups[order[2]], pos.right);
+    }
+
+    function set(group, p) {
+        document.getElementById(group.role).style = p.role;
+        document.getElementById(group.text).style = p.text;
+        document.getElementById(group.circle).style = p.circle;
+    }
+
+    function updateScale() {
+        const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+        document.documentElement.style.setProperty('--scale', scale);
+    }
+
+    window.addEventListener('resize', updateScale);
+    updateScale();
+
+    // ============== 完美版：从首页进来才播，返回不播，关浏览器重置 ==============
+    let introAudio = null;
+    function playIntroVoice() {
+        // 只有从首页过来才播放
+        if (!sessionStorage.getItem("from_index")) {
+            return;
+        }
+
+        // 播放一次后立即删除标记，确保永远不再播
+        sessionStorage.removeItem("from_index");
+
+        introAudio = new Audio('audio/bgm.mp3');
+        introAudio.volume = 1.0;
+
+        // 播放时背景音乐降低音量
+        if (window.bgMusic) {
+            window.bgMusic.volume = 0.2;
+        }
+
+        // 处理浏览器自动播放限制
+        introAudio.play().catch(() => {
+            document.addEventListener('click', () => {
+                introAudio.play();
+            }, { once: true });
+        });
+
+        // 播放完毕恢复背景音乐
+        introAudio.onended = function () {
+            if (window.bgMusic) {
+                window.bgMusic.volume = 1.0;
+            }
+        };
+    }
+
+    // 页面加载执行
+    window.addEventListener('load', () => {
+        setTimeout(playIntroVoice, 500);
+    });
+</script>
+
+<!-- 全局音乐 iframe，保证背景音乐续播 -->
+<iframe id="musicFrame" src="music.html" style="display:none;width:0;height:0;border:0;" allow="autoplay"></iframe>
+<script>
+let bgMusic;
+const musicFrame = document.getElementById("musicFrame");
+
+musicFrame.onload = function() {
+  bgMusic = window.top.bgMusic || musicFrame.contentWindow.bgMusic;
+  window.bgMusic = bgMusic;
+
+  if (bgMusic && bgMusic.paused) {
+    bgMusic.play().catch(() => {
+      document.addEventListener('click', () => {
+        bgMusic.play();
+      }, { once: true });
+    });
+  }
+};
+</script>
+
+</body>
+</html>
